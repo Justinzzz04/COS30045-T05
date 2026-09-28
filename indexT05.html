@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>T05 - D3 Multi-Chart Dashboard</title>
+  <link rel="stylesheet" href="styleT05.css">
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+
+  <header class="dashboard-header">
+    <h1>D3 Charts Dashboard</h1>
+    <p class="subtitle">TV Power Consumption &amp; Spot Prices (T05)</p>
+  </header>
+
+  <main class="dashboard-container">
+    <div class="chart-grid">
+
+      <article class="chart-card">
+        <h3>TV Energy Consumption vs. Star Rating</h3>
+        <div id="scatter-chart" class="chart-container"></div>
+      </article>
+
+      <article class="chart-card">
+        <h3>Historical Spot Power Prices (1998–2024)</h3>
+        <div id="line-chart" class="chart-container"></div>
+      </article>
+
+      <article class="chart-card">
+        <h3>Energy Use by Screen Tech (55" TVs)</h3>
+        <div id="bar-chart" class="chart-container"></div>
+      </article>
+
+      <article class="chart-card">
+        <h3>Screen Tech Distribution (All Sizes)</h3>
+        <div id="donut-chart" class="chart-container"></div>
+      </article>
+
+    </div>
+  </main>
+
+  <script src="scatterT05.js"></script>
+  <script src="lineT05.js"></script>
+  <script src="barT05.js"></script>
+  <script src="donutT05.js"></script>
+</body>
+</html>
