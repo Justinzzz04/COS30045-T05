@@ -1,10 +1,11 @@
 (function() {
   const container = d3.select("#scatter-chart");
+  const tooltip = d3.select("#dashboard-tooltip");
 
   function render() {
     container.selectAll("*").remove();
 
-    const margin = { top: 20, right: 30, bottom: 60, left: 60 };
+    const margin = { top: 20, right: 30, bottom: 50, left: 60 };
     const width = container.node().getBoundingClientRect().width - margin.left - margin.right;
     const height = 320 - margin.top - margin.bottom;
 
@@ -25,7 +26,6 @@
       });
 
       const validData = data.filter(d => !isNaN(d.Star) && !isNaN(d.Energy));
-
       if (validData.length === 0) return;
 
       const x = d3.scaleLinear()
@@ -36,6 +36,12 @@
         .domain([0, d3.max(validData, d => d.Energy) * 1.1])
         .range([height, 0]);
 
+      // Subtle Background Grid
+      svg.append("g")
+        .attr("class", "grid")
+        .call(d3.axisLeft(y).tickSize(-width).tickFormat(""));
+
+      // Axes
       svg.append("g")
         .attr("class", "axis")
         .attr("transform", `translate(0,${height})`)
@@ -45,11 +51,12 @@
         .attr("class", "axis")
         .call(d3.axisLeft(y));
 
+      // Labels
       svg.append("text")
         .attr("x", width / 2)
         .attr("y", height + 40)
         .attr("text-anchor", "middle")
-        .style("font-size", "12px")
+        .attr("class", "chart-label")
         .text("Star Rating");
 
       svg.append("text")
@@ -57,18 +64,32 @@
         .attr("y", -45)
         .attr("x", -height / 2)
         .attr("text-anchor", "middle")
-        .style("font-size", "12px")
+        .attr("class", "chart-label")
         .text("Energy Consumption (kWh/year)");
 
+      // Scatter Points
       svg.selectAll("circle")
         .data(validData)
         .enter()
         .append("circle")
         .attr("cx", d => x(d.Star))
         .attr("cy", d => y(d.Energy))
-        .attr("r", 4)
-        .attr("fill", "#2b5c8f")
-        .attr("opacity", 0.7);
+        .attr("r", 5)
+        .attr("fill", "#2563eb")
+        .attr("opacity", 0.6)
+        .attr("stroke", "#1d4ed8")
+        .attr("stroke-width", 1)
+        .on("mouseover", (event, d) => {
+          tooltip.style("opacity", 1)
+            .html(`<strong>Star Rating:</strong> ${d.Star}<br><strong>Energy:</strong> ${d.Energy} kWh/year`);
+        })
+        .on("mousemove", (event) => {
+          tooltip.style("left", (event.pageX + 12) + "px")
+                 .style("top", (event.pageY - 28) + "px");
+        })
+        .on("mouseout", () => {
+          tooltip.style("opacity", 0);
+        });
 
     }).catch(err => console.error("Error loading Scatter Plot CSV:", err));
   }
