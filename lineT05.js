@@ -1,5 +1,6 @@
 (function() {
   const container = d3.select("#line-chart");
+  const tooltip = d3.select("#dashboard-tooltip");
 
   function render() {
     container.selectAll("*").remove();
@@ -28,7 +29,6 @@
       });
 
       const validData = data.filter(d => d.Year && !isNaN(d.Price)).sort((a, b) => a.Year - b.Year);
-
       if (validData.length === 0) return;
 
       const x = d3.scaleTime()
@@ -39,6 +39,12 @@
         .domain([0, d3.max(validData, d => d.Price) * 1.1])
         .range([height, 0]);
 
+      // Subtle Grid Lines
+      svg.append("g")
+        .attr("class", "grid")
+        .call(d3.axisLeft(y).tickSize(-width).tickFormat(""));
+
+      // Axes
       svg.append("g")
         .attr("class", "axis")
         .attr("transform", `translate(0,${height})`)
@@ -48,11 +54,12 @@
         .attr("class", "axis")
         .call(d3.axisLeft(y));
 
+      // Axis Labels
       svg.append("text")
         .attr("x", width / 2)
         .attr("y", height + 40)
         .attr("text-anchor", "middle")
-        .style("font-size", "12px")
+        .attr("class", "chart-label")
         .text("Year");
 
       svg.append("text")
@@ -60,20 +67,58 @@
         .attr("y", -45)
         .attr("x", -height / 2)
         .attr("text-anchor", "middle")
-        .style("font-size", "12px")
-        .text("Price ($/MWh)");
+        .attr("class", "chart-label")
+        .text("Spot Price ($/MWh)");
 
       const line = d3.line()
         .x(d => x(d.Year))
         .y(d => y(d.Price))
         .curve(d3.curveMonotoneX);
 
+      // Line Path
       svg.append("path")
         .datum(validData)
         .attr("fill", "none")
-        .attr("stroke", "#e91e63")
+        .attr("stroke", "#0284c7")
         .attr("stroke-width", 2.5)
         .attr("d", line);
+
+      // Focus Circle Overlay for Tooltips
+      const focus = svg.append("circle")
+        .attr("r", 5)
+        .attr("fill", "#0284c7")
+        .attr("stroke", "#ffffff")
+        .attr("stroke-width", 2)
+        .style("opacity", 0);
+
+      // Transparent Overlay for Tracking Hover
+      const bisectDate = d3.bisector(d => d.Year).left;
+
+      svg.append("rect")
+        .attr("width", width)
+        .attr("height", height)
+        .attr("fill", "none")
+        .attr("pointer-events", "all")
+        .on("mouseover", () => focus.style("opacity", 1))
+        .on("mouseout", () => {
+          focus.style("opacity", 0);
+          tooltip.style("opacity", 0);
+        })
+        .on("mousemove", (event) => {
+          const x0 = x.invert(d3.pointer(event)[0]);
+          const i = bisectDate(validData, x0, 1);
+          const d0 = validData[i - 1];
+          const d1 = validData[i];
+          const d = (d1 && (x0 - d0.Year > d1.Year - x0)) ? d1 : d0;
+
+          if (d) {
+            focus.attr("cx", x(d.Year)).attr("cy", y(d.Price));
+            tooltip.style("opacity", 1)
+              .html(`<strong>Year:</strong> ${d.Year.getFullYear()}<br><strong>Price:</strong> $${d.Price.toFixed(2)}/MWh`)
+              .style("left", (event.pageX + 12) + "px")
+              .style("top", (event.pageY - 28) + "px");
+          }
+        });
 
     }).catch(err => console.error("Error loading Line Chart data:", err));
   }
