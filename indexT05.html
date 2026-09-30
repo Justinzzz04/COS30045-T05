@@ -10,35 +10,50 @@
 <body>
 
   <header class="dashboard-header">
-    <h1>D3 Charts Dashboard</h1>
-    <p class="subtitle">TV Power Consumption &amp; Spot Prices (T05)</p>
+    <h1>Energy & Spot Price Dashboard</h1>
+    <p class="subtitle">An overview of TV power consumption benchmarks and historical Australian electricity spot price trends.</p>
   </header>
 
   <main class="dashboard-container">
     <div class="chart-grid">
 
       <article class="chart-card">
-        <h3>TV Energy Consumption vs. Star Rating</h3>
+        <header class="chart-card-header">
+          <h3>TV Energy Consumption vs. Star Rating</h3>
+          <p class="chart-desc">Higher star ratings correlate with lower annual energy consumption (kWh/year).</p>
+        </header>
         <div id="scatter-chart" class="chart-container"></div>
       </article>
 
       <article class="chart-card">
-        <h3>Historical Spot Power Prices (1998–2024)</h3>
+        <header class="chart-card-header">
+          <h3>Historical Spot Power Prices (1998–2024)</h3>
+          <p class="chart-desc">Average electricity spot prices ($/MWh) over time, showing recent volatility spikes.</p>
+        </header>
         <div id="line-chart" class="chart-container"></div>
       </article>
 
       <article class="chart-card">
-        <h3>Energy Use by Screen Tech (55" TVs)</h3>
+        <header class="chart-card-header">
+          <h3>Energy Use by Screen Tech (55" TVs)</h3>
+          <p class="chart-desc">Ranked comparison of average annual energy consumption across display technologies.</p>
+        </header>
         <div id="bar-chart" class="chart-container"></div>
       </article>
 
       <article class="chart-card">
-        <h3>Screen Tech Distribution (All Sizes)</h3>
+        <header class="chart-card-header">
+          <h3>Screen Tech Share (All Sizes)</h3>
+          <p class="chart-desc">Proportional distribution of total energy consumption by screen type across all size categories.</p>
+        </header>
         <div id="donut-chart" class="chart-container"></div>
       </article>
 
     </div>
   </main>
+
+  <!-- Shared Tooltip Div -->
+  <div id="dashboard-tooltip" class="d3-tooltip"></div>
 
   <script src="scatterT05.js"></script>
   <script src="lineT05.js"></script>
