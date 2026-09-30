@@ -1,10 +1,11 @@
 (function() {
   const container = d3.select("#bar-chart");
+  const tooltip = d3.select("#dashboard-tooltip");
 
   function render() {
     container.selectAll("*").remove();
 
-    const margin = { top: 20, right: 30, bottom: 60, left: 60 };
+    const margin = { top: 20, right: 60, bottom: 40, left: 100 };
     const width = container.node().getBoundingClientRect().width - margin.left - margin.right;
     const height = 320 - margin.top - margin.bottom;
 
@@ -24,54 +25,80 @@
         d.Energy = +d[energyKey];
       });
 
-      const validData = data.filter(d => d.Tech && !isNaN(d.Energy));
+      // Sort descending for visual hierarchy
+      const validData = data.filter(d => d.Tech && !isNaN(d.Energy))
+        .sort((a, b) => b.Energy - a.Energy);
 
       if (validData.length === 0) return;
 
-      const x = d3.scaleBand()
+      const y = d3.scaleBand()
         .domain(validData.map(d => d.Tech))
-        .range([0, width])
-        .padding(0.3);
+        .range([0, height])
+        .padding(0.25);
 
-      const y = d3.scaleLinear()
+      const x = d3.scaleLinear()
         .domain([0, d3.max(validData, d => d.Energy) * 1.15])
-        .range([height, 0]);
+        .range([0, width]);
 
+      // Subtle Vertical Grid
+      svg.append("g")
+        .attr("class", "grid")
+        .call(d3.axisBottom(x).tickSize(height).tickFormat(""));
+
+      // Axes
       svg.append("g")
         .attr("class", "axis")
         .attr("transform", `translate(0,${height})`)
-        .call(d3.axisBottom(x));
+        .call(d3.axisBottom(x).ticks(5));
 
       svg.append("g")
         .attr("class", "axis")
         .call(d3.axisLeft(y));
 
+      // X-Axis Title
       svg.append("text")
         .attr("x", width / 2)
-        .attr("y", height + 45)
+        .attr("y", height + 35)
         .attr("text-anchor", "middle")
-        .style("font-size", "12px")
-        .text("Screen Technology");
+        .attr("class", "chart-label")
+        .text("Mean Energy Consumption (kWh/year)");
 
-      svg.append("text")
-        .attr("transform", "rotate(-90)")
-        .attr("y", -45)
-        .attr("x", -height / 2)
-        .attr("text-anchor", "middle")
-        .style("font-size", "12px")
-        .text("Mean Energy (kWh/year)");
-
+      // Horizontal Bars
       svg.selectAll(".bar")
         .data(validData)
         .enter()
         .append("rect")
         .attr("class", "bar")
-        .attr("x", d => x(d.Tech))
-        .attr("y", d => y(d.Energy))
-        .attr("width", x.bandwidth())
-        .attr("height", d => height - y(d.Energy))
-        .attr("fill", "#66bb6a")
-        .attr("rx", 4);
+        .attr("y", d => y(d.Tech))
+        .attr("x", 0)
+        .attr("height", y.bandwidth())
+        .attr("width", d => x(d.Energy))
+        .attr("fill", "#059669")
+        .attr("rx", 4)
+        .on("mouseover", (event, d) => {
+          tooltip.style("opacity", 1)
+            .html(`<strong>${d.Tech}:</strong> ${d.Energy.toFixed(1)} kWh/year`);
+        })
+        .on("mousemove", (event) => {
+          tooltip.style("left", (event.pageX + 12) + "px")
+                 .style("top", (event.pageY - 28) + "px");
+        })
+        .on("mouseout", () => {
+          tooltip.style("opacity", 0);
+        });
+
+      // Direct Value Labels on Bars
+      svg.selectAll(".value-label")
+        .data(validData)
+        .enter()
+        .append("text")
+        .attr("class", "value-label")
+        .attr("x", d => x(d.Energy) + 6)
+        .attr("y", d => y(d.Tech) + y.bandwidth() / 2 + 4)
+        .attr("font-size", "11px")
+        .attr("fill", "#334155")
+        .attr("font-weight", "500")
+        .text(d => d.Energy.toFixed(1));
 
     }).catch(err => console.error("Error loading Bar Chart data:", err));
   }
